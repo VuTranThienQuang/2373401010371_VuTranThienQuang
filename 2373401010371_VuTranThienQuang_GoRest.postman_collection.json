@@ -1,0 +1,317 @@
+{
+  "info": {
+    "_postman_id": "8fe49d5c-cc03-4d7d-97c6-9b998dabc8db",
+    "name": "2373401010371_VuTranThienQuang_GoRest",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59100175",
+    "_collection_link": "https://go.postman.co/collection/59100175-8fe49d5c-cc03-4d7d-97c6-9b998dabc8db?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Positive_Cases",
+      "item": [
+        {
+          "name": "Tạo người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"User 1 created successfully\", function () {\r\n    pm.response.to.have.status(201);\r\n});\r\n\r\nif (pm.response.code === 201) {\r\n    const token = pm.environment.get(\"token\");\r\n    const runId = pm.variables.get(\"runId\");\r\n\r\n    const users = [\r\n        {\r\n            name: \"Tran Thi B\",\r\n            gender: \"female\",\r\n            email: `tranthib${runId}@example.com`,\r\n            status: \"active\"\r\n        },\r\n        {\r\n            name: \"Le Van C\",\r\n            gender: \"male\",\r\n            email: `levanc${runId}@example.com`,\r\n            status: \"inactive\"\r\n        }\r\n    ];\r\n\r\n    function createNext(index) {\r\n        if (index >= users.length) {\r\n            console.log(\"Hoan tat tao 3 users.\");\r\n            return;\r\n        }\r\n\r\n        pm.sendRequest({\r\n            url: \"https://gorest.co.in/public/v2/users\",\r\n            method: \"POST\",\r\n            header: {\r\n                \"Content-Type\": \"application/json\",\r\n                \"Authorization\": \"Bearer \" + token\r\n            },\r\n            body: {\r\n                mode: \"raw\",\r\n                raw: JSON.stringify(users[index])\r\n            }\r\n        }, function (err, res) {\r\n            if (err) {\r\n                console.error(\"Loi tao user:\", err);\r\n                return;\r\n            }\r\n\r\n            console.log(\r\n                \"User \" + (index + 2) +\r\n                \" - HTTP \" + res.code,\r\n                res.json()\r\n            );\r\n\r\n            pm.test(\r\n                \"User \" + (index + 2) + \" returns 201\",\r\n                function () {\r\n                    pm.expect(res.code).to.eql(201);\r\n                }\r\n            );\r\n\r\n            createNext(index + 1);\r\n        });\r\n    }\r\n\r\n    if (token) {\r\n        createNext(0);\r\n    } else {\r\n        console.error(\"Khong tim thay environment variable token.\");\r\n    }\r\n}\r\n\r\n"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\nconst runId = Date.now();\r\n\r\npm.variables.set(\"runId\", runId);\r\npm.variables.set(\"email1\", `nguyenvana${runId}@example.com`);\r\npm.variables.set(\"email2\", `tranthib${runId}@example.com`);\r\npm.variables.set(\"email3\", `levanc${runId}@example.com`);\r\n\r\n\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n    \"name\": \"Nguyen Van A\",\r\n    \"gender\": \"male\",\r\n    \"email\": \"{{email1}}\",\r\n    \"status\": \"active\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Kiểm tra người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Status code is 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"User ID is correct\", function () {\r\n    const user = pm.response.json();\r\n    pm.expect(user.id).to.eql(8684137);\r\n});\r\n\r\npm.test(\"User information is correct\", function () {\r\n    const user = pm.response.json();\r\n\r\n    pm.expect(user.name).to.eql(\"Nguyen Van A\");\r\n    pm.expect(user.gender).to.eql(\"male\");\r\n    pm.expect(user.status).to.eql(\"active\");\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users/8684137",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users",
+                "8684137"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Đổi status người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Status code is 200 OK\", function () {\r\n    pm.response.to.have.status(200);\r\n});\r\n\r\npm.test(\"User status changed to inactive\", function () {\r\n    const user = pm.response.json();\r\n\r\n    pm.expect(user.id).to.eql(8684137);\r\n    pm.expect(user.status).to.eql(\"inactive\");\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n    \"status\": \"inactive\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users/8684137",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users",
+                "8684137"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Status code is 204 No Content\", function () {\r\n    pm.response.to.have.status(204);\r\n});\r\n\r\npm.test(\"Response body is empty\", function () {\r\n    pm.expect(pm.response.text()).to.eql(\"\");\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users/8684137",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users",
+                "8684137"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Negative_Cases",
+      "item": [
+        {
+          "name": "Tạo người dùng ko cấp token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Request without token returns 401\", function () {\r\n    pm.response.to.have.status(401);\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n    \"name\": \"Negative Test User\",\r\n    \"gender\": \"male\",\r\n    \"email\": \"negative_no_token_2026@example.com\",\r\n    \"status\": \"active\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tạo người dùng bằng email đã tạo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Duplicate email returns 422\", function () {\r\n    pm.response.to.have.status(422);\r\n});\r\n\r\npm.test(\"Response reports duplicate email\", function () {\r\n    const response = pm.response.json();\r\n\r\n    pm.expect(response).to.be.an(\"array\");\r\n\r\n    pm.expect(\r\n        response.some(function (item) {\r\n            return item.field === \"email\";\r\n        })\r\n    ).to.eql(true);\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\r\n{\r\n    \"name\": \"Duplicate Email User\",\r\n    \"gender\": \"female\",\r\n    \"email\": \"nguyenvana17928131744760@example.com\",\r\n    \"status\": \"active\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Xóa người dùng",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "\r\npm.test(\"Deleted user returns 404\", function () {\r\n    pm.response.to.have.status(404);\r\n});\r\n"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://gorest.co.in/public/v2/users/8684216",
+              "protocol": "https",
+              "host": [
+                "gorest",
+                "co",
+                "in"
+              ],
+              "path": [
+                "public",
+                "v2",
+                "users",
+                "8684216"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "positiveUserIndex",
+      "value": ""
+    }
+  ]
+}
