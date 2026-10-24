@@ -28,7 +28,7 @@ jobs:
         # File data là 'users.csv' (nằm ở thư mục gốc của repo)
         # Sử dụng secret 'API_TOKEN' đã tạo ở bước trên
         run: |
-          newman run Your_Collection.postman_collection.json \
+          newman run 2373401010371_VuTranThienQuang_GoRest_Env.postman_collection.json \
             -d users.csv \
             --env-var "token=${{ secrets.API_TOKEN }}" \
             --reporters cli,junit \
