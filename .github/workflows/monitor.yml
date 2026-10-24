@@ -1,10 +1,11 @@
-name: API Monitoring (Shift-Right Testing)
+name: API Monitoring (Shift-Right)
 
+# Sự kiện kích hoạt workflow
 on:
+  # Chạy định kỳ vào mỗi giờ (0 phút mỗi giờ)
   schedule:
-    # Chạy định kỳ mỗi giờ (vào phút thứ 0)
     - cron: '0 * * * *'
-  # Cho phép kích hoạt chạy thủ công từ tab Actions trên GitHub
+  # Cho phép kích hoạt thủ công từ giao diện GitHub
   workflow_dispatch:
 
 jobs:
@@ -12,23 +13,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '16'
 
       - name: Install Newman
         run: npm install -g newman
 
-      - name: Run API Monitoring Test (Response time < 800ms)
-        env:
-          GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
+      - name: Run Monitoring Test
+        # Giả sử file collection dành cho giám sát là 'Monitoring_Collection.postman_collection.json'
+        # Và bạn có một file môi trường 'Production.postman_environment.json' chứa URL của production
         run: |
-          newman run "postman/2373401010371_VuTranThienQuang_GoRest.postman_collection.json" \
-            --environment "postman/2373401010371_VuTranThienQuang_GoRest_Env.postman_environment.json" \
-            --env-var "token=$GOREST_TOKEN" \
-            --folder "Positive_Cases" \
-            --delay-request 100
+          newman run Monitoring_Collection.postman_collection.json \
+            -e Production.postman_environment.json \
+            --env-var "token=${{ secrets.API_TOKEN }}" \
+            --reporters cli,junit \
+            --reporter-junit-export monitor_results.xml
+
+      - name: Publish Monitoring Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: monitor_results.xml
