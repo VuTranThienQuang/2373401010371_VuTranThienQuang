@@ -1,0 +1,46 @@
+name: Postman API Testing with Newman
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout mã nguồn repository về runner
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Cài đặt môi trường Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Cài đặt Newman và các reporter (nếu cần)
+      - name: Install Newman
+        run: |
+          npm install -g newman
+
+      # 4. Chạy bộ sưu tập Postman với Newman (truyền token động từ GitHub Secrets vào Environment)
+      - name: Run Postman Collection via Newman
+        env:
+          GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
+        run: |
+          newman run "postman/2373401010371_VuTranThienQuang_GoRest.postman_collection.json" \
+            --environment "postman/2373401010371_VuTranThienQuang_GoRest_Env.postman_environment.json" \
+            --env-var "token=$GOREST_TOKEN" \
+            --reporters cli,htmlextra \
+            --reporter-htmlextra-export "reports/report.html"
+
+      # 5. Lưu trữ báo cáo kiểm thử (HTML Report) làm artifact của workflow
+      - name: Upload Test Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: postman-html-report
+          path: reports/report.html
