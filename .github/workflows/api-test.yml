@@ -1,50 +1,47 @@
-name: Postman API Testing with Newman
+name: API Testing with Newman
 
+# Sự kiện kích hoạt workflow: khi có code được "push" lên branch chính (thường là main hoặc master)
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
+    branches:
+      - main # Thay đổi thành 'master' nếu branch chính của bạn là master
 
 jobs:
   test-api:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # Chạy trên môi trường Ubuntu mới nhất
 
     steps:
-      # 1. Checkout mã nguồn
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3 # Bước này để lấy code từ repository về môi trường chạy
 
-      # 2. Cài đặt Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3 # Cài đặt Node.js để chạy Newman
         with:
-          node-version: '20'
+          node-version: '16' # Hoặc phiên bản Node.js bạn đang dùng
 
-      # 3. Cài đặt Newman và Newman Reporter HTMLExtra
-      - name: Install Newman & Reporters
+      - name: Install Newman
+        run: npm install -g newman # Cài đặt Newman toàn cục
+
+      - name: Run API Tests
+        # Đây là bước quan trọng, thực thi Newman
+        # Giả sử file collection là 'Your_Collection.postman_collection.json'
+        # File data là 'users.csv' (nằm ở thư mục gốc của repo)
+        # Sử dụng secret 'API_TOKEN' đã tạo ở bước trên
         run: |
-          npm install -g newman newman-reporter-htmlextra
+          newman run Your_Collection.postman_collection.json \
+            -d users.csv \
+            --env-var "token=${{ secrets.API_TOKEN }}" \
+            --reporters cli,junit \
+            --reporter-junit-export results.xml
+        # Giải thích các tham số:
+        # - Your_Collection.postman_collection.json: Đường dẫn đến file collection của bạn.
+        # - -d users.csv: Sử dụng file data users.csv cho data-driven testing.
+        # - --env-var "token=${{ secrets.API_TOKEN }}": Truyền giá trị secret 'API_TOKEN' vào biến 'token' trong Postman.
+        # - --reporters cli,junit: Hiển thị kết quả ra màn hình và xuất file báo cáo định dạng JUnit.
+        # - --reporter-junit-export results.xml: Tên file báo cáo JUnit.
 
-      # 4. Tạo thư mục chứa báo cáo trước khi chạy
-      - name: Create reports directory
-        run: mkdir -p reports
-
-      # 5. Chạy Postman Collection
-      - name: Run Postman Collection via Newman
-        env:
-          GOREST_TOKEN: ${{ secrets.GOREST_TOKEN }}
-        run: |
-          newman run "postman/2373401010371_VuTranThienQuang_GoRest.postman_collection.json" \
-            --environment "postman/2373401010371_VuTranThienQuang_GoRest_Env.postman_environment.json" \
-            --env-var "token=$GOREST_TOKEN" \
-            --reporters cli,htmlextra \
-            --reporter-htmlextra-export "reports/report.html"
-
-      # 6. Upload báo cáo HTML lên Artifacts (chạy kể cả khi test fail)
-      - name: Upload Test Report
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2 # Action để hiển thị kết quả kiểm thử trên giao diện GitHub
+        if: always() # Luôn chạy bước này kể cả khi các bước trên bị lỗi
         with:
-          name: postman-html-report
-          path: reports/report.html
+          files: results.xml
