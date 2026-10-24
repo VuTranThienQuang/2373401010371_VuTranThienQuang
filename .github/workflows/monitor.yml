@@ -28,8 +28,8 @@ jobs:
         # Giả sử file collection dành cho giám sát là 'Monitoring_Collection.postman_collection.json'
         # Và bạn có một file môi trường 'Production.postman_environment.json' chứa URL của production
         run: |
-          newman run Monitoring_Collection.postman_collection.json \
-            -e Production.postman_environment.json \
+          newman run 2373401010371_VuTranThienQuang_GoRest_Env.postman_collection.json \
+            -e 2373401010371_VuTranThienQuang_GoRest_Env.postman_environment.json \
             --env-var "token=${{ secrets.API_TOKEN }}" \
             --reporters cli,junit \
             --reporter-junit-export monitor_results.xml
